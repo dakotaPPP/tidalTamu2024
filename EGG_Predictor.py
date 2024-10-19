@@ -30,16 +30,16 @@ params = {
     'objective': 'multiclass',  # For multiclass classification
     'num_class': 12,             # Number of classes
     'metric': 'multi_logloss',   # Loss function for multiclass
-    'learning_rate': 0.001,
-    'num_leaves': 31,
+    'learning_rate': 0.01,
+    'num_leaves': 64,
     'boosting_type': 'gbdt',
-    'max_depth': -1,
+    'max_depth': 7,
     'min_data_in_leaf': 20,
     'feature_fraction': 0.8
 }
 
 # Step 5: Train the model
-bst = lgb.train(params, train_data, valid_sets=[test_data], num_boost_round=100, early_stopping_rounds=10)
+bst = lgb.train(params, train_data, valid_sets=[test_data], num_boost_round=100)
 
 # Step 6: Predict class probabilities
 y_pred_proba = bst.predict(X_test)
