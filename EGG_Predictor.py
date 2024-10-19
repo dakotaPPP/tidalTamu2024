@@ -8,7 +8,7 @@ from sklearn.preprocessing import OneHotEncoder
 # Generate random data for demonstration purposes
 X = np.random.rand(100, 10)  # 100 samples, 10 features
 y = np.random.randint(0, 3, 100)  # Multiclass labels (3 classes: 0, 1, 2)
-
+# Hello this is an update
 # Step 2: Split data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
