@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import patientRoutes from './routes/patients';
 import pool from './config/database';
 
@@ -121,6 +121,10 @@ app.delete('/api/delete/:fileId', async (req, res) => {
     console.error('Error removing file:', err);
     res.status(500).json({ message: 'Error removing file' });
   }
+});
+
+app.get('/api/process-file', async (req, res) => {
+  
 });
 
 const port = process.env.PORT || 3001;
