@@ -488,7 +488,6 @@ export default function Page() {
             </Table>
             <div className="mt-4">
               <FileUploadComponent></FileUploadComponent>
-              <FileRemoveComponent></FileRemoveComponent>
             </div>
           </DialogContent>
         </Dialog>

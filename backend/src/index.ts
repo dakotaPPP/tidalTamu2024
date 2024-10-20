@@ -26,10 +26,12 @@ const app = express();
 // Function to upload file to S3
 async function uploadFileToS3(fileBuffer: Buffer, fileName: string, patientId: string): Promise<string | null> {
   try {
+    console.log('Uploading file to S3...');
     const s3Key = `${Date.now()}_${fileName}_${patientId}`;  // Generate unique S3 key
 
     const uploadParams = {
       Bucket: process.env.S3_BUCKET_NAME!,
+      Region: process.env.AWS_REGION,
       Key: s3Key,
       Body: fileBuffer,  // Upload file as a buffer
     };
@@ -74,6 +76,7 @@ async function removeFileFromS3(s3Key: string): Promise<string | null> {
   try {
     const deleteParams = {
       Bucket: process.env.S3_BUCKET_NAME!,
+      Region: process.env.AWS_REGION,
       Key: s3Key,
     };
 
