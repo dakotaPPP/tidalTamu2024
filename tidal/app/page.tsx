@@ -1,101 +1,202 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useRef } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { MoreHorizontal, UserCircle, Upload } from "lucide-react"
+
+// Mock server action
+async function addPatient(patientData: FormData) {
+  // Simulate a database operation
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  console.log('Patient added:', Object.fromEntries(patientData))
+  return { success: true }
+}
+
+export default function Dashboard() {
+  const [patients, setPatients] = useState([
+    { id: '001', name: 'John Doe', eegFiles: [] },
+    { id: '002', name: 'Jane Smith', eegFiles: [] },
+  ])
+  const [isAddingPatient, setIsAddingPatient] = useState(false)
+  const [newPatient, setNewPatient] = useState({ name: '', id: '' })
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAddPatient = async () => {
+    setIsAddingPatient(true)
+    const formData = new FormData()
+    formData.append('name', newPatient.name)
+    formData.append('id', newPatient.id)
+    selectedFiles.forEach((file, index) => {
+      formData.append(`eegFile${index}`, file)
+    })
+
+    const result = await addPatient(formData)
+    if (result.success) {
+      setPatients([...patients, { ...newPatient, eegFiles: selectedFiles }])
+      setNewPatient({ name: '', id: '' })
+      setSelectedFiles([])
+    }
+    setIsAddingPatient(false)
+  }
+
+  const handleRemovePatient = (id: string) => {
+    setPatients(patients.filter(patient => patient.id !== id))
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files))
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
+          <span className="text-xl font-bold">Your Logo</span>
         </div>
+        <div className="flex items-center space-x-2">
+          <UserCircle className="w-6 h-6" />
+          <span>Account</span>
+        </div>
+      </header>
+
+      <main className="flex-grow p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-4">Patient List</h1>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Patient ID</TableHead>
+                <TableHead>Patient Name</TableHead>
+                <TableHead>EEG Files</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {patients.map((patient) => (
+                <TableRow key={patient.id}>
+                  <TableCell>{patient.id}</TableCell>
+                  <TableCell>{patient.name}</TableCell>
+                  <TableCell>{patient.eegFiles.length} file(s)</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => alert('Opening EEG Reports')}>
+                          Open EEG Reports
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRemovePatient(patient.id)}>
+                          Remove Patient
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Add Patient</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Patient</DialogTitle>
+              <DialogDescription>
+                Enter the patient's details here. Click save when you're done.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={newPatient.name}
+                  onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="id" className="text-right">
+                  ID
+                </Label>
+                <Input
+                  id="id"
+                  value={newPatient.id}
+                  onChange={(e) => setNewPatient({ ...newPatient, id: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="eegData" className="text-right">
+                  EEG Data
+                </Label>
+                <div className="col-span-3">
+                  <Input
+                    id="eegData"
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {selectedFiles.length > 0 ? `${selectedFiles.length} file(s) selected` : 'Upload EEG Files'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddPatient} disabled={isAddingPatient}>
+                {isAddingPatient ? 'Adding...' : 'Add Patient'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
-  );
+  )
 }
