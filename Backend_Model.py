@@ -74,17 +74,35 @@ class CatBoost(nn.Module):
 class LSTMModel(nn.Module):
     def __init__(self, input_size):
         super(LSTMModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size=64, num_layers=1, batch_first=True)
-        self.fc = nn.Linear(64, 1)
-        self.sigmoid = nn.Sigmoid()
+        self.lstm = nn.LSTM(input_size, hidden_size=128, num_layers=2, batch_first=True, dropout=0.3)
+        self.fc = nn.Linear(128, 64)
+        self.output = nn.Linear(64, 1)
+        self.relu = nn.ReLU()
         
     def forward(self, x):
-        # x shape: (batch_size, seq_len, input_size)
         x, _ = self.lstm(x)
         x = x[:, -1, :]  # Get last output of the sequence
-        x = self.fc(x)
-        x = self.sigmoid(x)
-        return x
+        x = self.relu(self.fc(x))
+        x = torch.sigmoid(self.output(x))
+        return x.squeeze()
+
+class TransformerModel(nn.Module):
+    def __init__(self, input_size):
+        super(TransformerModel, self).__init__()
+        self.embedding = nn.Linear(input_size, 128)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=128, nhead=8, batch_first=True)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=3)
+        self.fc = nn.Linear(128, 64)
+        self.output = nn.Linear(64, 1)
+        self.relu = nn.ReLU()
+        
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.transformer_encoder(x)
+        x = x.mean(dim=1)  # Average over sequence length
+        x = self.relu(self.fc(x))
+        x = torch.sigmoid(self.output(x))
+        return x.squeeze()
 
 
 def evaluate(csv_file):
@@ -152,7 +170,7 @@ def evaluate(csv_file):
         inputs = inputs.unsqueeze(1)
         outputs = lst(inputs)
         print(1, output)
-        base[1] = outputs.tolist()[0][0]
+        base[1] = outputs.tolist()
 
     lst = torch.load("LSTM_disorder_9.pt") 
     test_dataset = torch.utils.data.TensorDataset(torch.tensor(scaled_case, dtype=torch.float32), torch.tensor(scaled_case, dtype=torch.float32))
@@ -160,7 +178,7 @@ def evaluate(csv_file):
     for inputs, _ in test_loader:
         inputs = inputs.unsqueeze(1)
         outputs = lst(inputs)
-        base[9] = outputs.tolist()[0][0]
+        base[9] = outputs.tolist()
 
     cat = CatBoost()
     cat = torch.load("CatBoost_disorder_7.pt")  
