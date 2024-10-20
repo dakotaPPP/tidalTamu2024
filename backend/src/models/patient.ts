@@ -1,4 +1,16 @@
 import pool from '../config/database';
+import { spawn } from 'child_process';
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from 'stream';
+import { run } from 'node:test';
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
 
 export interface Patient {
   pid: string;
@@ -72,3 +84,47 @@ export async function addEEGData(pid: string, eegData: Eeg): Promise<Eeg> {
 export async function deleteEEGData(pid: string, eegId: string): Promise<void> {
   await pool.query('DELETE FROM eeg WHERE pid = $1 AND id = $2', [pid, eegId]);
 }
+
+export async function runPythonScript(s3Key: string): Promise<string> {
+  try {
+    // Step 1: Fetch the CSV file from S3
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME!,
+      Key: s3Key as string,
+    });
+
+    const { Body } = await s3Client.send(command);
+
+    const fileStream = ensureStream(Body); // Ensure the body is treated as a stream
+
+    // Step 2: Send the CSV data to the Python script
+    const pythonProcess = spawn('python3', ['src/python/script.py'], {
+      stdio: ['pipe', 'pipe', 'inherit'],
+    })
+    
+    fileStream.pipe(pythonProcess.stdin);
+
+    // Capture the output from the Python script
+    let result = '';
+    pythonProcess.stdout.on('data', (data) => {
+      result += data.toString();
+    });
+    return result;
+
+  } catch (error) {
+    console.error('Error processing file:', error);
+    throw error;
+  }
+}
+
+function ensureStream(body: any): Readable {
+  if (body instanceof Readable) {
+    return body;
+  } else if (body instanceof Uint8Array) {
+    return Readable.from(body); // Convert buffer/Uint8Array to stream
+  } else {
+    throw new Error('Unsupported Body type for streaming');
+  }
+}
+
+runPythonScript('1729438108219_eeg1.csv_2')

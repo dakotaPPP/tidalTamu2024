@@ -1,4 +1,4 @@
-'use client'
+/*'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
@@ -670,8 +670,8 @@ export default function Page() {
       </main>
     </div>
   )
-}
-/*
+}*/
+
 "use client"
 
 import { useState, useEffect } from 'react'
@@ -811,4 +811,4 @@ export default function Component() {
       </div>
     </div>
   )
-}*/
+}
