@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { MoreHorizontal, UserCircle, Upload, Download, RefreshCw, Trash2, Plus } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" 
 
 // Mock server actions
 async function addPatient(patientData: FormData) {
