@@ -1,5 +1,7 @@
-/*'use client'
-
+'use client'
+/*
+import logo from '@/components/logo.png'
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -305,7 +307,7 @@ export default function Page() {
       <header className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary-foreground rounded-full"></div>
-          <span className="text-xl font-bold">Your Logo</span>
+          <span className="text-xl font-bold">NeuroScan</span>
         </div>
         <div className="flex items-center space-x-2">
           <UserCircle className="w-6 h-6" />
@@ -670,8 +672,8 @@ export default function Page() {
       </main>
     </div>
   )
-}*/
-
+}
+*/
 "use client"
 
 import { useState, useEffect } from 'react'
@@ -698,7 +700,7 @@ const allocateData = (dataArray: number[]) => {
 };
 
 // Sample data array (replace this with your actual data input)
-const sampleDataArray = [30, 40, 35, 80, 25, 20, 15, 35, 40, 45, 30, 25];
+const sampleDataArray = [7.54, 1.61, 5.87, 1.61, 7.68, 7.4, 4.75, 45.23, 6.12, 1.61, 3.02, 7.55];
 
 // Updated sample data with new categories and subcategories
 const createDisorderData = (allocatedData: ReturnType<typeof allocateData>) => {
